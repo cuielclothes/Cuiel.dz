@@ -225,6 +225,12 @@
         <div class="form-group"><label>Taille *</label><select id="fSize"><option value="">Choisir...</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></div>
         <div class="form-group"><label>Hauteur *</label><select id="fHeight"><option value="">Choisir...</option><option>Moins de 155 cm</option><option>155 - 160 cm</option><option>160 - 165 cm</option><option>165 - 170 cm</option><option>170 - 175 cm</option><option>Plus de 175 cm</option></select></div>
       </div>
+      <div class="form-group" id="colorGroup" style="display:none">
+        <label>Couleur *</label>
+        <select id="fColor">
+          <option value="">Choisir la couleur...</option>
+        </select>
+      </div>
       <div class="form-group"><label>Mode de Livraison *</label><select id="fDelivery" onchange="updateTotal()"><option value="">Choisir...</option><option value="bureau">Livraison au bureau (World Express)</option><option value="domicile">Livraison à domicile</option></select></div>
 
       <div class="total-box" id="totalBox">
@@ -277,7 +283,7 @@
         <div class="product-info">
           <div class="product-name">Chemise</div>
           <div class="product-price">3 000 DA</div>
-          <button class="btn-order" onclick="openModal('Chemise',3000)">Commander</button>
+          <button class="btn-order" onclick="openModal('Chemise',3000,['Bleu foncé','Bleu clair','Rose','Jaune','Noir'])">Commander</button>
         </div>
       </div>
     </div>
@@ -327,7 +333,7 @@
         <div class="product-info">
           <div class="product-name">Robe à Fleur</div>
           <div class="product-price">6 900 DA</div>
-          <button class="btn-order" onclick="openModal('Robe à Fleur',6900)">Commander</button>
+          <button class="btn-order" onclick="openModal('Robe à Fleur',6900,['Blanc','Beige'])">Commander</button>
         </div>
       </div>
     </div>
@@ -364,9 +370,8 @@
         <div class="product-overlay"></div>
         <div class="product-info">
           <div class="product-name">Kimono</div>
-          <div class="product-price">4 800 DA</div>
-          <div style="font-size:.62rem;color:var(--camel-lt);margin-bottom:.6rem;line-height:1.6">Couleurs&nbsp;: Vert · Blanc · Baby Pink · Baby Blue · Marron · Noir</div>
-          <button class="btn-order" onclick="openModal('Kimono',4800)">Commander</button>
+          <div class="product-price">4 900 DA</div>
+          <button class="btn-order" onclick="openModal('Kimono',4900,['Bleu','Blanc','Rose pâle','Marron','Vert'])">Commander</button>
         </div>
       </div>
     </div>
@@ -381,7 +386,7 @@
     <div class="price-row"><span class="price-name">Chemise</span><span class="price-amount">3 000 DA</span></div>
     <div class="price-row"><span class="price-name">Chemise Dentelle</span><span class="price-amount">3 400 DA</span></div>
     <div class="price-row"><span class="price-name">Ensemble Deux Pièces</span><span class="price-amount">4 300 DA</span></div>
-    <div class="price-row"><span class="price-name">Kimono</span><span class="price-amount">4 800 DA</span></div>
+    <div class="price-row"><span class="price-name">Kimono</span><span class="price-amount">4 900 DA</span></div>
     <div class="price-row"><span class="price-name">Robe Jean avec Chemise</span><span class="price-amount">5 400 DA</span></div>
     <div class="price-row"><span class="price-name">Ensemble Jupe et Chemise</span><span class="price-amount">5 500 DA</span></div>
     <div class="price-row"><span class="price-name">Chemise et Pantalon Jean</span><span class="price-amount">5 800 DA</span></div>
@@ -436,7 +441,7 @@
   let currentProduct = '';
   let currentPrice = 0;
 
-  function openModal(name, price) {
+  function openModal(name, price, colors) {
     currentProduct = name;
     currentPrice = typeof price === 'number' ? price : parseInt(String(price).replace(/[^0-9]/g,''));
     document.getElementById('modalProduct').textContent = name;
@@ -447,6 +452,20 @@
     document.getElementById('fDelivery').selectedIndex = 0;
     document.getElementById('deliveryInfoBox').classList.remove('show');
     document.getElementById('totalBox').classList.remove('show');
+    // Handle color field
+    var colorGroup = document.getElementById('colorGroup');
+    var colorSel = document.getElementById('fColor');
+    colorSel.innerHTML = '<option value="">Choisir la couleur...</option>';
+    if (colors && colors.length > 0) {
+      colors.forEach(function(c) {
+        var opt = document.createElement('option');
+        opt.value = c; opt.textContent = c;
+        colorSel.appendChild(opt);
+      });
+      colorGroup.style.display = 'block';
+    } else {
+      colorGroup.style.display = 'none';
+    }
     document.getElementById('modalOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -455,7 +474,7 @@
     document.getElementById('modalOverlay').classList.remove('open');
     document.body.style.overflow = '';
     ['fName','fPhone','fCommune'].forEach(id => document.getElementById(id).value = '');
-    ['fSize','fHeight','fDelivery','fWilaya'].forEach(id => document.getElementById(id).selectedIndex = 0);
+    ['fSize','fHeight','fDelivery','fWilaya','fColor'].forEach(id => document.getElementById(id).selectedIndex = 0);
     document.getElementById('deliveryInfoBox').classList.remove('show');
     document.getElementById('totalBox').classList.remove('show');
   }
@@ -503,8 +522,15 @@
     const size = document.getElementById('fSize').value;
     const height = document.getElementById('fHeight').value;
     const delivery = document.getElementById('fDelivery').value;
+    const colorGroup = document.getElementById('colorGroup');
+    const colorSel = document.getElementById('fColor');
+    const color = colorGroup.style.display !== 'none' ? colorSel.value : '';
     if (!name||!phone||!wilayaSel.value||!commune||!size||!height||!delivery) {
       alert('Veuillez remplir tous les champs.');
+      return;
+    }
+    if (colorGroup.style.display !== 'none' && !color) {
+      alert('Veuillez choisir une couleur.');
       return;
     }
     const parts = wilayaSel.value.split('|');
@@ -526,6 +552,7 @@
       'Commune : ' + commune + '\n' +
       'Taille : ' + size + '\n' +
       'Hauteur : ' + height + '\n' +
+      (color ? 'Couleur : ' + color + '\n' : '') +
       'Mode de livraison : ' + deliveryLabel + '\n\n' +
       'Paiement a la livraison'
     );
@@ -543,6 +570,7 @@
         commune: commune,
         taille: size,
         hauteur: height,
+        couleur: color || 'Non spécifiée',
         mode_livraison: deliveryLabel
       })
     }).then(function(r) {
