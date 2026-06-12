@@ -556,10 +556,12 @@
       'Mode de livraison : ' + deliveryLabel + '\n\n' +
       'Paiement a la livraison'
     );
-    fetch('https://formspree.io/f/mzdqrgjy', {
+    fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
+        access_key: '54e08166-4870-44ea-9718-76b9ac339c4a',
+        subject: 'Nouvelle Commande — Cuiel Clothes',
         article: currentProduct,
         prix_article: currentPrice.toLocaleString('fr-DZ') + ' DA',
         livraison: deliveryLabel + ' — ' + deliveryCost.toLocaleString('fr-DZ') + ' DA',
